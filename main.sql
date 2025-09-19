@@ -216,12 +216,32 @@ ORDER BY Delivery.SupplierNumber, SupplierName, "Avg Qty" DESC, Delivery.ITemNam
 -- Nested Queries
 -- -----------------------------------
 
-
 -- 1. What are the names of items sold by departments on the second floor? This 
--- was previously
+-- was previously solved in the preceding section by use of a join. However it could
+-- be more efficiently solved by using an inner query
+
+-- no nesting
+SELECT DISTINCT Sale.ItemName
+FROM Sale, Department
+WHERE Sale.DepartmentName = Department.DepartmentName
+AND Department.DepartmentFloor = 2;
+
+-- nested
+SELECT DISTINCT ItemName
+FROM Sale
+WHERE DepartmentName
+IN (
+  SELECT DepartmentName
+  FROM Department
+  WHERE DepartmentFloor = 2
+); 
 
 
 -- 2. Find the salary of Clare's manager.
+
+
+
+
 
 
 -- 3. Find the name and salary of the managers with more than two employees
