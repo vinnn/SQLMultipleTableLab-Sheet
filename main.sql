@@ -238,13 +238,47 @@ IN (
 
 
 -- 2. Find the salary of Clare's manager.
+SELECT EmployeeSalary
+FROM Employee
+WHERE EmployeeNumber 
+IN (
+  SELECT BossNumber
+  FROM Employee
+  WHERE EmployeeName='Clare'
+);
 
-
-
-
+-- solution (same result):
+SELECT EmployeeName, EmployeeSalary
+FROM Employee
+WHERE EmployeeNumber 
+= (
+  SELECT BossNumber
+  FROM Employee
+  WHERE EmployeeName='Clare'
+);
 
 
 -- 3. Find the name and salary of the managers with more than two employees
+SELECT EmployeeName, EmployeeSalary
+FROM Employee
+WHERE EmployeeNumber 
+IN (
+  SELECT BossNumber
+  FROM Employee
+  GROUP BY BossNumber
+  HAVING COUNT(EmployeeName) > 2
+);
+
+-- solution (same result):
+SELECT EmployeeName, EmployeeSalary
+FROM Employee
+WHERE EmployeeNumber 
+IN (
+  SELECT BossNumber
+  FROM Employee
+  GROUP BY BossNumber
+  HAVING COUNT(*) > 2
+);
 
 
 -- 4. List the names of the employees who earn more than any employee in the 
