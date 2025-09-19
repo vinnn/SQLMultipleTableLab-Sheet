@@ -338,12 +338,32 @@ IN (
 
 -- 7. Find the suppliers that deliver compasses and at least three other 
 -- kinds of item
+SELECT SupplierName
+FROM Supplier
+WHERE SupplierNumber 
+IN (
+  SELECT SupplierNumber
+  FROM Delivery
+  WHERE ItemName='Compass'
+  AND 3
+  <= (
+    SELECT COUNT(DISTINCT ItemName)
+    FROM Delivery
+    WHERE ItemName <> 'Compass'
+  )
+);
 
-
-
-
-
-
+-- solution (same result):
+SELECT DISTINCT Delivery.SupplierNumber, Supplier.SupplierName
+FROM (Supplier NATURAL JOIN Delivery)
+WHERE SupplierNumber 
+IN (
+  SELECT SupplierNumber
+  FROM Delivery
+  WHERE ItemName = 'Compass'
+)
+GROUP BY Delivery.SupplierNumber, Supplier.SupplierName
+HAVING COUNT(DISTINCT ItemName) > 3;
 
 
 -- 8. List the departments for which each item delivered to the department is 
