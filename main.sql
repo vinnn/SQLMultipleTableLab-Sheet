@@ -258,7 +258,8 @@ WHERE EmployeeNumber
 );
 
 
--- 3. Find the name and salary of the managers with more than two employees
+-- 3. Find the name and salary of the 
+-- managers with more than two employees
 SELECT EmployeeName, EmployeeSalary
 FROM Employee
 WHERE EmployeeNumber 
@@ -281,20 +282,68 @@ IN (
 );
 
 
--- 4. List the names of the employees who earn more than any employee in the 
--- Marketing department
-
+-- 4. List the names of the employees 
+-- who earn more than any employee in 
+-- the Marketing department
+SELECT EmployeeName
+FROM Employee
+WHERE EmployeeSalary 
+> (
+  SELECT MAX(EmployeeSalary)
+  FROM Employee
+  WHERE DepartmentName = 'Marketing'
+);
 
 -- 5. Among all the departments with a total salary greater than £25000, find 
 -- the departments that sell Stetsons.
-
+SELECT DepartmentName
+FROM Sale
+WHERE ItemName = 'Stetsons'
+AND DepartmentName 
+IN (
+  SELECT DepartmentName
+  FROM Employee
+  GROUP BY DepartmentName
+  HAVING SUM(EmployeeSalary) > 25000
+);
 
 
 -- 6. Find the suppliers that deliver compasses and at least one other kind of item
+SELECT SupplierName
+FROM Supplier
+WHERE SupplierNumber 
+IN (
+  SELECT SupplierNumber
+  FROM Delivery
+  WHERE ItemName='Compass'
+  AND 1
+  <= (
+    SELECT COUNT(DISTINCT ItemName)
+    FROM Delivery
+    WHERE ItemName <> 'Compass'
+  )
+);
+
+-- other solution:
+SELECT DISTINCT Delivery.SupplierNumber, Supplier.SupplierName
+FROM (Supplier NATURAL JOIN Delivery)
+WHERE ItemName <> 'Compass'
+AND SupplierNumber
+IN (
+  SELECT SupplierNumber
+  FROM Delivery
+  WHERE ItemName = 'Compass'
+);
 
 
 -- 7. Find the suppliers that deliver compasses and at least three other 
 -- kinds of item
+
+
+
+
+
+
 
 
 -- 8. List the departments for which each item delivered to the department is 
