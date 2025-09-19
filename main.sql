@@ -294,7 +294,8 @@ WHERE EmployeeSalary
   WHERE DepartmentName = 'Marketing'
 );
 
--- 5. Among all the departments with a total salary greater than £25000, find 
+-- 5. Among all the departments with a 
+-- total salary greater than £25000, find 
 -- the departments that sell Stetsons.
 SELECT DepartmentName
 FROM Sale
@@ -308,7 +309,8 @@ IN (
 );
 
 
--- 6. Find the suppliers that deliver compasses and at least one other kind of item
+-- 6. Find the suppliers that deliver 
+-- compasses and at least one other kind of item
 SELECT SupplierName
 FROM Supplier
 WHERE SupplierNumber 
@@ -336,7 +338,8 @@ IN (
 );
 
 
--- 7. Find the suppliers that deliver compasses and at least three other 
+-- 7. Find the suppliers that deliver 
+-- compasses and at least three other 
 -- kinds of item
 SELECT SupplierName
 FROM Supplier
@@ -369,7 +372,28 @@ HAVING COUNT(DISTINCT ItemName) > 3;
 -- 8. List the departments for which each item delivered to the department is 
 -- delivered to some other department as well
 
+-- this solution - not exactly answering - ...for which some items delivered...
+SELECT DISTINCT DepartmentName
+FROM Delivery
+WHERE ItemName
+IN (
+  SELECT ItemName
+  FROM Delivery
+  GROUP BY ItemName
+  HAVING COUNT(DISTINCT DepartmentName) > 1
+);
 
-
-
+-- solution - ...for which each item delivered...:
+SELECT DISTINCT DepartmentName
+FROM Delivery AS Delivery1
+WHERE NOT EXISTS
+(SELECT *
+FROM Delivery AS Delivery2
+WHERE Delivery2.DepartmentName =
+Delivery1.DepartmentName
+AND ItemName NOT IN
+(SELECT ItemName
+FROM Delivery AS Delivery3
+WHERE Delivery3.DepartmentName <>
+Delivery1.DepartmentName));
 
