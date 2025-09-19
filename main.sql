@@ -56,10 +56,12 @@ CREATE TABLE Delivery (
 -- Querying multiple tables
 -- -----------------------------------
 
+
 -- 1. names of employees in the Marketing department
 SELECT EmployeeName 
 FROM Employee 
 WHERE DepartmentName = 'Marketing';
+
 
 -- 2. items sold by the departments on the second floor
 SELECT ItemName
@@ -82,6 +84,7 @@ SELECT DISTINCT ItemName
 FROM (Sale JOIN Department)
 WHERE Department.DepartmentFloor=2;
 
+
 -- 3. Identify by floor the items available on floors other than the second floor
 SELECT DISTINCT DepartmentFloor, ItemName 
 FROM Department, Sale 
@@ -95,26 +98,118 @@ WHERE Delivery.DepartmentName = Department.DepartmentName
 AND Department.DepartmentFloor <> 2
 ORDER BY Department.DepartmentFloor, ItemName;
 
+
 -- 4. Find the average salary of the employees in the Clothes department
+SELECT AVG(EmployeeSalary) AS 'Avg Salary' 
+FROM Employee
+WHERE Employee.DepartmentName = 'Clothes';
 
 
+-- 5. Find, for each department, the average salary of the employees in that 
+-- department and report by descending salary.
+
+SELECT DepartmentName, AVG(EmployeeSalary) AS 'Avg Salary'
+FROM Employee
+GROUP BY DepartmentName
+ORDER BY AVG(EmployeeSalary) DESC;
+
+-- see the following solution (!!!double quotes!!!):
+SELECT DepartmentName, AVG(EmployeeSalary) AS 'Avg Salary'
+FROM Employee
+GROUP BY DepartmentName
+ORDER BY "Avg Salary" DESC;
 
 
+-- 6. List the items delivered by exactly one supplier (i.e. the items 
+-- always delivered by the same supplier).
+SELECT ItemName
+FROM Delivery
+GROUP BY ItemName
+HAVING COUNT(DISTINCT SupplierNumber) = 1;
+-- NOTE: cannot use COUNT() in a WHERE
 
--- 5. Find, for each department, the average salary of the employees in that department and report by descending salary.
-
--- 6. List the items delivered by exactly one supplier (i.e. the items always delivered by the same supplier).
 
 -- 7. List the suppliers that deliver at least 10 items.
+SELECT SupplierName
+FROM Supplier, Delivery
+WHERE Supplier.SupplierNumber = Delivery.SupplierNumber
+GROUP BY SupplierName
+HAVING COUNT(DISTINCT ItemName) >= 10;
+
+-- solution (same result but showing supplier number as well):
+SELECT Supplier.SupplierNumber, Supplier.SupplierName
+FROM Delivery, Supplier
+WHERE Delivery.SupplierNumber = Supplier.SupplierNumber
+GROUP BY Supplier.SupplierNumber, Supplier.SupplierName
+HAVING COUNT(DISTINCT Delivery.ItemName) >= 10;
+
 
 -- 8. Count the number of direct employees of each manager
+SELECT BossNumber, COUNT(EmployeeNumber)
+FROM Employee
+GROUP BY BossNumber;
 
--- 9. Find, for each department that sells items of type 'E' the average salary of the employees.
+-- solution:
+SELECT Boss.EmployeeNumber, Boss.EmployeeName, COUNT(*) AS 'Employees'
+FROM Employee AS Worker, Employee AS Boss
+WHERE Worker.BossNumber = Boss.EmployeeNumber
+GROUP BY Boss.EmployeeNumber, Boss.EmployeeName;
 
--- 10. Find the total number of items of type 'E' sold by departments on the second floor
 
--- 11. What is the average delivery quantity of items of type 'N' delivered by each company?
+-- 9. Find, for each department that sells items of type 'E' the 
+-- average salary of the employees.
+SELECT Employee.DepartmentName, AVG(Employee.EmployeeSalary) AS 'Avg Salary'
+FROM Employee, Sale, Item
+WHERE Item.ItemType = 'E'
+AND Item.ItemName = Sale.ItemName
+AND Sale.DepartmentName = Employee.DepartmentName
+GROUP BY Employee.DepartmentName; 
 
+-- solution (same result):
+SELECT Department.DepartmentName, AVG(EmployeeSalary) AS 'Average Salary'
+FROM Employee, Department, Sale, Item
+WHERE Employee.DepartmentName = Department.DepartmentName
+AND Department.DepartmentName = Sale.DepartmentName
+AND Sale.ItemName = Item.ItemName
+AND ItemType='E'
+GROUP BY Department.DepartmentName;
+
+
+-- 10. Find the total number of items of type 'E' sold by 
+-- departments on the second floor
+SELECT SUM(Sale.SaleQuantity)
+FROM Item, Sale, Department
+WHERE Item.ItemType = 'E' 
+AND Item.ItemName = Sale.ItemName
+AND Sale.DepartmentName = Department.DepartmentName
+AND Department.DepartmentFloor = 2
+GROUP BY Department.DepartmentFloor;
+
+-- solution (same result):
+SELECT SUM(SaleQuantity) AS 'Number of Items'
+FROM Department, Sale, Item
+WHERE Department.DepartmentName = Sale.DepartmentName
+AND Sale.ItemName = Item.ItemName
+AND ItemType = 'E' 
+AND DepartmentFloor = '2';
+
+
+-- 11. What is the average delivery quantity of items of 
+-- type 'N' delivered by each company?
+SELECT Supplier.SupplierName, AVG(Delivery.DeliveryQuantity)
+FROM Delivery, Item, Supplier
+WHERE Delivery.ItemName = Item.ItemName
+AND Item.ItemType = 'N'
+AND Delivery.SupplierNumber = Supplier.SupplierNumber
+GROUP BY Delivery.SupplierNumber;
+
+-- solution (question understood differently):
+SELECT Delivery.SupplierNumber, SupplierName, Delivery.ItemName, 
+AVG(Delivery.DeliveryQuantity) AS 'Avg Qty'
+FROM ((Delivery NATURAL JOIN Supplier) NATURAL JOIN Item)
+WHERE Item.ItemType = 'N'
+GROUP BY Delivery.SupplierNumber, SupplierName, Delivery.ItemName
+ORDER BY Delivery.SupplierNumber, SupplierName, "Avg Qty" DESC, Delivery.ITemName;
 
 
 -- -----------------------------------
@@ -122,7 +217,8 @@ ORDER BY Department.DepartmentFloor, ItemName;
 -- -----------------------------------
 
 
--- 1. What are the names of items sold by departments on the second floor? This was previously
+-- 1. What are the names of items sold by departments on the second floor? This 
+-- was previously
 
 
 -- 2. Find the salary of Clare's manager.
@@ -131,19 +227,24 @@ ORDER BY Department.DepartmentFloor, ItemName;
 -- 3. Find the name and salary of the managers with more than two employees
 
 
--- 4. List the names of the employees who earn more than any employee in the Marketing department
+-- 4. List the names of the employees who earn more than any employee in the 
+-- Marketing department
 
 
--- 5. Among all the departments with a total salary greater than £25000, find the departments that sell Stetsons.
+-- 5. Among all the departments with a total salary greater than £25000, find 
+-- the departments that sell Stetsons.
+
 
 
 -- 6. Find the suppliers that deliver compasses and at least one other kind of item
 
 
--- 7. Find the suppliers that deliver compasses and at least three other kinds of item
+-- 7. Find the suppliers that deliver compasses and at least three other 
+-- kinds of item
 
 
--- 8. List the departments for which each item delivered to the department is delivered to some other department as well
+-- 8. List the departments for which each item delivered to the department is 
+-- delivered to some other department as well
 
 
 
